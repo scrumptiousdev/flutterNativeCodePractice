@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() => runApp(MyApp());
 
@@ -10,21 +11,35 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue
       ),
-      home: MyHomePage(title: 'Native Code Practice')
+      home: MyHomePage()
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
-
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  int _batteryLevel;
+
+  Future<void> _getBatteryLevel() async {
+    const platform = MethodChannel('scrumptious.dev/battery');
+    try {
+      final batteryLevel = await platform.invokeMethod('getBatteryLevel');
+      setState(() => _batteryLevel = batteryLevel);
+    } on PlatformException catch (_) {
+      setState(() => _batteryLevel = null);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _getBatteryLevel();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text('Native Code Practice')
       ),
       body: Center(
-        child: Text('Battery Level: ...')
+        child: Text('Battery Level: $_batteryLevel')
       )
     );
   }
